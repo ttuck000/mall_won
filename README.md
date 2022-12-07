@@ -29,7 +29,7 @@
 
 
 ## Model
-![image](https://user-images.githubusercontent.com/53729857/205811898-fe557cc1-6bc2-4dbf-867c-1734bb86d370.png)
+![image](https://user-images.githubusercontent.com/119825867/206178277-b7a13e5a-b6c4-4baf-9dda-06938f2b34ee.png)
 
 
 요구사항을 커버하는지 검증
