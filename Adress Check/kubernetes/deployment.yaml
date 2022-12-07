@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Adress Check
+  labels:
+    app: Adress Check
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: Adress Check
+  template:
+    metadata:
+      labels:
+        app: Adress Check
+    spec:
+      containers:
+        - name: Adress Check
+          image: username/Adress Check:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
