@@ -1,4 +1,4 @@
-# 예제 - 쇼핑몰 프로세스
+# 예제 - 음식배달 프로세스
 참고 템플릿: https://github.com/msa-ez/example-food-delivery
 
 # 서비스 시나리오
