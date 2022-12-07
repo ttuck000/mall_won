@@ -1,4 +1,6 @@
 # 예제 - 쇼핑몰 프로세스
+참고 템플릿: https://github.com/msa-ez/example-food-delivery
+
 # 서비스 시나리오
 
 기능적 요구사항
