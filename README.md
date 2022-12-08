@@ -57,288 +57,114 @@
 
 # 체크포인트
 ## 1. Saga(Pub/Sub)
-orders로 post 요청을 보내면 OrderPlaced에서 pay에 있는 pay커맨드로 요청을 전달한다.(req/res : 동기)
-그 후에 pay에서 PaymentApproved이벤트를 거쳐 store에 있는 receipt정책으로 이벤트를 전달한다.(Pub/Sub : 비동기)
-아래는 orders post요청으로 3개의 테이블에 데이터가 들어간 것을 확인한 증적이다.
-
-```
-gitpod /workspace/mall (main) $ http :8081/orders item="치킨" qty=10 price=200 state="주문접수-결재완료"
-HTTP/1.1 201 
-Connection: keep-alive
-Content-Type: application/json
-Date: Tue, 06 Dec 2022 06:19:20 GMT
-Keep-Alive: timeout=60
-Location: http://localhost:8081/orders/1
-Transfer-Encoding: chunked
-Vary: Origin
-Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers
-
-{
-    "_links": {
-        "order": {
-            "href": "http://localhost:8081/orders/1"
-        },
-        "self": {
-            "href": "http://localhost:8081/orders/1"
-        }
-    },
-    "item": "치킨",
-    "price": 200,
-    "qty": 10,
-    "state": "주문접수-결재완료"
-}
-
-
-gitpod /workspace/mall (main) $ http :8084/payments
-HTTP/1.1 200 
-Connection: keep-alive
-Content-Type: application/hal+json
-Date: Tue, 06 Dec 2022 06:19:36 GMT
-Keep-Alive: timeout=60
-Transfer-Encoding: chunked
-Vary: Origin
-Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers
-
-{
-    "_embedded": {
-        "payments": [
-            {
-                "_links": {
-                    "payment": {
-                        "href": "http://localhost:8084/payments/1"
-                    },
-                    "self": {
-                        "href": "http://localhost:8084/payments/1"
-                    }
-                },
-                "action": "progress",
-                "amount": 2000,
-                "orderId": 1
-            }
-        ]
-    },
-    "_links": {
-        "profile": {
-            "href": "http://localhost:8084/profile/payments"
-        },
-        "self": {
-            "href": "http://localhost:8084/payments"
-        }
-    },
-    "page": {
-        "number": 0,
-        "size": 20,
-        "totalElements": 1,
-        "totalPages": 1
-    }
-}
-
-
-gitpod /workspace/mall (main) $ http :8082/orderManagements
-HTTP/1.1 200 
-Connection: keep-alive
-Content-Type: application/hal+json
-Date: Tue, 06 Dec 2022 06:19:51 GMT
-Keep-Alive: timeout=60
-Transfer-Encoding: chunked
-Vary: Origin
-Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers
-
-{
-    "_embedded": {
-        "orderManagements": [
-            {
-                "_links": {
-                    "orderManagement": {
-                        "href": "http://localhost:8082/orderManagements/1"
-                    },
-                    "self": {
-                        "href": "http://localhost:8082/orderManagements/1"
-                    }
-                },
-                "address": "test주소",
-                "foodType": "한식",
-                "orderId": 1,
-                "state": null
-            }
-        ]
-    },
-    "_links": {
-        "profile": {
-            "href": "http://localhost:8082/profile/orderManagements"
-        },
-        "self": {
-            "href": "http://localhost:8082/orderManagements"
-        }
-    },
-    "page": {
-        "number": 0,
-        "size": 20,
-        "totalElements": 1,
-        "totalPages": 1
-    }
-}
-
-
-gitpod /workspace/mall (main) $ 
-```
+ 
 
 ## 2. CQRS 
-읽기 모델을 분리한다.
-- app -> OrderStateViewHandler.java에서 이벤트에 따라 Real Model 저장, 업데이트, 삭제를 정의한다. 
-```
-package mall.infra;
 
-import mall.domain.*;
-import mall.config.kafka.KafkaProcessor;
+CQRS를 통해 주문 상태가 변경되는 이벤트가 발생할 때마다 view의 주문 상태를 변경하도록 한다.
+
+ 
+
+ 
+ 
+
+
+•	Customer -> OrderStatusViewHandler.java에서 이벤트에 따라 Real Model 저장, 업데이트, 삭제를 정의한다.
+
+
+ 
+
+package mallwon.infra;
+
+import mallwon.domain.*;
+import mallwon.config.kafka.KafkaProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
 @Service
-public class OrderStateViewHandler {
+public class OrderstatusViewHandler {
 
     @Autowired
-    private OrderStateRepository orderStateRepository;
+    private OrderstatusRepository orderstatusRepository;
 
-    // 생성될 경우 해당 Real Model에 값 저장
     @StreamListener(KafkaProcessor.INPUT)
-    public void whenOrderPlaced_then_CREATE_1 (@Payload OrderPlaced orderPlaced) {
+    public void whenOrderPleaced_then_CREATE_1 (@Payload OrderPleaced orderPleaced) {
         try {
 
-            if (!orderPlaced.validate()) return;
+            if (!orderPleaced.validate()) return;
 
             // view 객체 생성
-            OrderState orderState = new OrderState();
+            Orderstatus orderstatus = new Orderstatus();
             // view 객체에 이벤트의 Value 를 set 함
-            orderState.setId(orderPlaced.getId());
-            orderState.setItem(orderPlaced.getItem());
-            orderState.setState("생성");
-            // view 레파지 토리에 save
-            orderStateRepository.save(orderState);
+            orderstatus.setId(orderPleaced.getId());
+            // view 레퍼지토리에 save
+            orderstatusRepository.save(orderstatus);
 
         }catch (Exception e){
             e.printStackTrace();
         }
     }
-}
-```
 
-- 아래의 결과처럼 orderStates에 저장된다.
-```
-gitpod /workspace/mall (main) $ http :8081/orderStates
-HTTP/1.1 200 
-Connection: keep-alive
-Content-Type: application/hal+json
-Date: Tue, 06 Dec 2022 08:22:59 GMT
-Keep-Alive: timeout=60
-Transfer-Encoding: chunked
-Vary: Origin
-Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenOrderableArea_then_UPDATE_1(@Payload OrderableArea orderableArea) {
+        try {
+            if (!orderableArea.validate()) return;
+                // view 객체 조회
+            Optional<Orderstatus> orderstatusOptional = orderstatusRepository.findById(orderableArea.getOder_id());
 
-{
-    "_embedded": {
-        "orderStates": []
-    },
-    "_links": {
-        "profile": {
-            "href": "http://localhost:8081/profile/orderStates"
-        },
-        "self": {
-            "href": "http://localhost:8081/orderStates"
+            if( orderstatusOptional.isPresent()) {
+                 Orderstatus orderstatus = orderstatusOptional.get();
+            // view 객체에 이벤트의 eventDirectValue 를 set 함
+                orderstatus.setId(orderableArea.getId());    
+                orderstatus.setStatus("OrderableArea");
+                // view 레퍼지토리에 save
+                 orderstatusRepository.save(orderstatus);
+                }
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
-    },
-    "page": {
-        "number": 0,
-        "size": 20,
-        "totalElements": 0,
-        "totalPages": 0
+    }
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenPaid_then_UPDATE_2(@Payload Paid paid) {
+        try {
+            if (!paid.validate()) return;
+                // view 객체 조회
+            Optional<Orderstatus> orderstatusOptional = orderstatusRepository.findById(paid.getOder_id());
+
+            if( orderstatusOptional.isPresent()) {
+                 Orderstatus orderstatus = orderstatusOptional.get();
+            // view 객체에 이벤트의 eventDirectValue 를 set 함
+                orderstatus.setId(paid.getId());    
+                orderstatus.setStatus("Complete payment");    
+                // view 레퍼지토리에 save
+                 orderstatusRepository.save(orderstatus);
+                }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @StreamListener(KafkaProcessor.INPUT)
+    public void whenUnavailableArea_then_DELETE_1(@Payload UnavailableArea unavailableArea) {
+        try {
+            if (!unavailableArea.validate()) return;
+            // view 레퍼지토리에 삭제 쿼리
+            orderstatusRepository.deleteById(unavailableArea.getOder_id());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
 
 
-gitpod /workspace/mall (main) $ http :8081/orders item="치킨" qty=10 price=200 state="주문접수-결재완료"
-HTTP/1.1 201 
-Connection: keep-alive
-Content-Type: application/json
-Date: Tue, 06 Dec 2022 08:23:10 GMT
-Keep-Alive: timeout=60
-Location: http://localhost:8081/orders/1
-Transfer-Encoding: chunked
-Vary: Origin
-Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers
-
-{
-    "_links": {
-        "order": {
-            "href": "http://localhost:8081/orders/1"
-        },
-        "self": {
-            "href": "http://localhost:8081/orders/1"
-        }
-    },
-    "item": "치킨",
-    "price": 200,
-    "qty": 10,
-    "state": "주문접수-결재완료"
-}
-
-
-gitpod /workspace/mall (main) $ http :8081/orderStates
-HTTP/1.1 200 
-Connection: keep-alive
-Content-Type: application/hal+json
-Date: Tue, 06 Dec 2022 08:23:23 GMT
-Keep-Alive: timeout=60
-Transfer-Encoding: chunked
-Vary: Origin
-Vary: Access-Control-Request-Method
-Vary: Access-Control-Request-Headers
-
-{
-    "_embedded": {
-        "orderStates": [
-            {
-                "_links": {
-                    "orderState": {
-                        "href": "http://localhost:8081/orderStates/1"
-                    },
-                    "self": {
-                        "href": "http://localhost:8081/orderStates/1"
-                    }
-                },
-                "item": "치킨",
-                "state": "생성"
-            }
-        ]
-    },
-    "_links": {
-        "profile": {
-            "href": "http://localhost:8081/profile/orderStates"
-        },
-        "self": {
-            "href": "http://localhost:8081/orderStates"
-        }
-    },
-    "page": {
-        "number": 0,
-        "size": 20,
-        "totalElements": 1,
-        "totalPages": 1
-    }
-}
-
-
-gitpod /workspace/mall (main) $ 
-```
-
-- 다만 위와 같은 모델로 구현할 경우 다른 도메인에 있는 이벤트에 따른 뷰를 제공하지 못하므로 단독 컨텍스트에 리얼 모델을 구현하여 보완이 필요함.
 
 ## 3. Compensation / Correlation
 - 작성예정
