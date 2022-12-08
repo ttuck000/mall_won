@@ -58,6 +58,16 @@
 # 체크포인트
 ## 1. Saga(Pub/Sub)
  
+![image](https://user-images.githubusercontent.com/119825867/206378008-7c744ebd-4c12-4f35-9094-b2dfdd71e1d6.png)
+cd App 이동 후 하기 명령 실행
+
+http POST http://localhost:8081/orders Order_id=1111 Order_qty=2 Order_subject="치킨" Adress="대림"   실행 
+
+![image](https://user-images.githubusercontent.com/119825867/206378167-effb395b-5c2e-4cc3-96c0-38e390aeab0d.png)
+
+Kafka listener
+![image](https://user-images.githubusercontent.com/119825867/206378210-ec26af0b-1c02-4e11-ba6f-e766c82e8d4f.png)
+
 
 ## 2. CQRS 
 
@@ -68,9 +78,6 @@ CQRS를 통해 주문 상태가 변경되는 이벤트가 발생할 때마다 vi
 ![image](https://user-images.githubusercontent.com/119825867/206370114-35877283-d6c7-43e3-82e6-6129f710f817.png)
 
 •	Customer -> OrderStatusViewHandler.java에서 이벤트에 따라 Real Model 저장, 업데이트, 삭제를 정의한다.
-
-
- 
 
 package mallwon.infra;
 
