@@ -177,7 +177,31 @@ public class OrderstatusViewHandler {
 
 order 서비스의 Order.java
 
+    /**
+        주문이 취소될 때 보상 처리
+     */
+    @PreRemove
+    public void onPreRemove(){
+        // 주문 취소 publish
+        OrderCanceled orderCanceled = new OrderCanceled(this);
+        orderCanceled.publishAfterCommit();
+    }
+    
+store 서비스의 PolicyHandler.java
 
+/**
+        주문 취소에 대해
+     */
+    @StreamListener(value=KafkaProcessor.INPUT, condition="headers['type']=='OrderCanceled'")
+    public void wheneverOrderCanceled_UpdateStatus(@Payload OrderCanceled orderCanceled){
+
+        OrderCanceled event = orderCanceled;
+        System.out.println("\n\n##### listener UpdateStatus : " + orderCanceled + "\n\n");
+
+        // Sample Logic //
+        // 상태를 "취소" 변경하기
+        FoodCooking.updateStatus(event);
+    }
 
 
 
