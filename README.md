@@ -185,112 +185,19 @@ public class OrderstatusViewHandler {
 ## 6. Gateway / Ingress
 Application.yml 파일
 
-server:
-  port: 8088
-
----
-
-spring:
-  profiles: default
-  cloud:
-    gateway:
-      routes:
-        - id: App
-          uri: http://localhost:8081
-          predicates:
-            - Path=/orders/**, /menuSearches/**
-        - id: Adress Check
-          uri: http://localhost:8082
-          predicates:
-            - Path=/checkOederAdresses/**, 
-        - id: Pay
-          uri: http://localhost:8083
-          predicates:
-            - Path=/payments/**, 
-        - id: store
-          uri: http://localhost:8084
-          predicates:
-            - Path=/foodCookings/**, 
-        - id: Delivery
-          uri: http://localhost:8085
-          predicates:
-            - Path=/deliveryOrderProcessings/**, 
-        - id: Customer
-          uri: http://localhost:8086
-          predicates:
-            - Path=, /orderstatuses/**
-        - id: frontend
-          uri: http://localhost:8080
-          predicates:
-            - Path=/**
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins:
-              - "*"
-            allowedMethods:
-              - "*"
-            allowedHeaders:
-              - "*"
-            allowCredentials: true
-
----
-
-spring:
-  profiles: docker
-  cloud:
-    gateway:
-      routes:
-        - id: App
-          uri: http://app:8080
-          predicates:
-            - Path=/orders/**, /menuSearches/**
-        - id: Adress Check
-          uri: http://adressCheck:8080
-          predicates:
-            - Path=/checkOederAdresses/**, 
-        - id: Pay
-          uri: http://pay:8080
-          predicates:
-            - Path=/payments/**, 
-        - id: store
-          uri: http://store:8080
-          predicates:
-            - Path=/foodCookings/**, 
-        - id: Delivery
-          uri: http://delivery:8080
-          predicates:
-            - Path=/deliveryOrderProcessings/**, 
-        - id: Customer
-          uri: http://customer:8080
-          predicates:
-            - Path=, /orderstatuses/**
-        - id: frontend
-          uri: http://frontend:8080
-          predicates:
-            - Path=/**
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins:
-              - "*"
-            allowedMethods:
-              - "*"
-            allowedHeaders:
-              - "*"
-            allowCredentials: true
-
-server:
-  port: 8080
-
+![image](https://user-images.githubusercontent.com/119825867/206379145-c85bcbae-c29f-4553-aed4-6ce69507a1b8.png)
+![image](https://user-images.githubusercontent.com/119825867/206379197-eead2cbe-10ed-4ba2-9909-7908b0f79f4c.png)
 
 ------------------------------------------------------------------------------------------------------------
 
 Gateway 서비스 실행 
 ![image](https://user-images.githubusercontent.com/119825867/206370695-d7ea73d9-741d-4fcb-8711-ba3dd3ee3709.png)
-
 ![image](https://user-images.githubusercontent.com/119825867/206370727-d01fa3ef-c9bc-4196-b5e4-18e744dd1f39.png)
+![image](https://user-images.githubusercontent.com/119825867/206379287-acbfcff1-a8c4-4269-9a13-36842b3cc498.png)
+![image](https://user-images.githubusercontent.com/119825867/206379362-b55b7f0a-a39b-4f52-b53e-ced72bdeb9e3.png)
 
+Gw 기능 확인
+![image](https://user-images.githubusercontent.com/119825867/206379425-166eb473-0a65-4ca2-93f9-da95b172ca52.png)
 
 # 기타
 ## Before Running Services
