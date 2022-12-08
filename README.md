@@ -169,7 +169,17 @@ public class OrderstatusViewHandler {
 }
 
 ## 3. Compensation / Correlation
-- 작성중
+- 주문이 취소될 때 Compensation이 발생한다. Order 클래스에서 @PreRemove 어노테이션이 적용된 onPreRemove 메소드에서 구현한다.
+
+주문취소 이벤트 OrderCanceled를 publish하면서 다른 서비스인 store에서 updateStatus 정책을 통해 상태를 변경할 수 있다.
+
+서로 다른 마이크로서비스 간 데이터 일관성 처리를 위해 사용하는 correlation key에 대해 주문의 아이디인 orderId를 사용한다.
+
+order 서비스의 Order.java
+
+
+
+
 
 ## 4. Request / Response
 
