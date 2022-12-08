@@ -63,11 +63,9 @@
 
 CQRS를 통해 주문 상태가 변경되는 이벤트가 발생할 때마다 view의 주문 상태를 변경하도록 한다.
 
- 
-
- 
- 
-
+![image](https://user-images.githubusercontent.com/119825867/206370057-c324cdbd-8e8f-473f-9d7d-500a4a00c699.png)
+![image](https://user-images.githubusercontent.com/119825867/206370076-c660367b-456d-4761-b821-03abd0ad85a1.png)
+![image](https://user-images.githubusercontent.com/119825867/206370114-35877283-d6c7-43e3-82e6-6129f710f817.png)
 
 •	Customer -> OrderStatusViewHandler.java에서 이벤트에 따라 Real Model 저장, 업데이트, 삭제를 정의한다.
 
