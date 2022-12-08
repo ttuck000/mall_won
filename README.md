@@ -29,31 +29,31 @@
 ![image](https://user-images.githubusercontent.com/119825867/206178277-b7a13e5a-b6c4-4baf-9dda-06938f2b34ee.png)
 
 
-요구사항을 커버하는지 검증
+- 요구사항을 커버하는지 검증
 
-![image](https://user-images.githubusercontent.com/53729857/205814704-19cd22d1-88d2-4860-bc4c-5ad7ab0b02ee.png)
-    
-    - 고객이 메뉴를 선택하여 주문한다. (ok)
-    - 고객이 선택한 메뉴에 대해 결제한다. (ok)
-    - 주문이 되면 주문 내역이 입점상점주인에게 주문정보가 전달된다 (ok)
-    
-![image](https://user-images.githubusercontent.com/53729857/205815658-a7e27991-af7b-44a4-9c76-d732b456a40a.png)
 
-    - 상점주는 주문을 수락하거나 거절할 수 있다 (ok)
-    - 상점주는 요리시작때와 완료 시점에 시스템에 상태를 입력한다 (ok)
-    - 요리가 완료되면 고객의 지역 인근의 라이더들에 의해 배송건 조회가 가능하다 (ok)
-    - 주문상태가 바뀔 때 마다 카톡으로 알림을 보낸다 (ok)
     
-![image](https://user-images.githubusercontent.com/53729857/205816589-5c4d93b4-0503-46f9-98bf-d08db232451b.png)
+- 고객이 메뉴를 선택하여 주문한다. (ok)
+- 고객이 선택한 메뉴에 대해 결제한다. (ok)
+- 주문이 되면 주문 내역이 입점상점주인에게 주문정보가 전달된다 (ok)
+- 상점주는 주문을 수락하거나 거절할 수 있다 (ok)
+- 상점주는 요리시작때와 완료 시점에 시스템에 상태를 입력한다 (ok)
+- 요리가 완료되면 고객의 지역 인근의 라이더들에 의해 배송건 조회가 가능하다 (ok)
+- 주문상태가 바뀔 때 마다 카톡으로 알림을 보낸다 (ok)
+- 라이더가 해당 요리를 Pick한 후, 앱을 통해 통보한다. (ok)
+- 고객은 아직 요리가 시작되지 않은 주문은 취소할 수 있다 (ok)
+- 고객이 주문상태를 중간중간 조회한다 (ok)
+- 고객이 요리를 배달 받으면 배송확인 버튼을 탭하여, 모든 거래가 완료된다 (ok)
+    
 
-    - 라이더가 해당 요리를 Pick한 후, 앱을 통해 통보한다. (ok)
+
     
-![image](https://user-images.githubusercontent.com/53729857/205816875-45de8307-24b5-4cd8-a969-d7189fb85c7a.png) 
-    
-    - 고객은 아직 요리가 시작되지 않은 주문은 취소할 수 있다 (ok)
-    - 고객이 주문상태를 중간중간 조회한다 (ok)
-    - 고객이 요리를 배달 받으면 배송확인 버튼을 탭하여, 모든 거래가 완료된다 (ok)
-  
+- 추가 요구사항
+
+- 고객이 딜리버리를 취소하여 주문이 취소된다.(ok)
+- 딜리버리가 취소되고 결제가 취소된다.(ok)
+
+
 
 # 체크포인트
 ## 1. Saga(Pub/Sub)
@@ -169,10 +169,8 @@ public class OrderstatusViewHandler {
     }
 }
 
-
-
 ## 3. Compensation / Correlation
-- 작성예정
+- 작성중
 
 ## 4. Request / Response
 
@@ -180,7 +178,7 @@ public class OrderstatusViewHandler {
 ![image](https://user-images.githubusercontent.com/119825867/206370406-cbdab36d-34bf-4baf-946b-60334c0cdc1d.png)
 
 ## 5. Circuit Breaker
- 
+- 작성중
 
 ## 6. Gateway / Ingress
 Application.yml 파일
