@@ -199,18 +199,4 @@ Gateway 서비스 실행
 Gw 기능 확인
 ![image](https://user-images.githubusercontent.com/119825867/206379425-166eb473-0a65-4ca2-93f9-da95b172ca52.png)
 
-# 기타
-## Before Running Services
-### Make sure there is a Kafka server running
-```
-cd kafka
-docker-compose up
-```
-- Check the Kafka messages:
-```
-cd kafka
-docker-compose exec -it kafka /bin/bash
-cd /bin
-./kafka-console-consumer --bootstrap-server localhost:9092 --topic mallwon
-```
 
