@@ -169,125 +169,116 @@ public class OrderstatusViewHandler {
 
 ## 4. Request / Response
 
-![image](https://user-images.githubusercontent.com/53729857/205790895-04938551-3ad8-471c-b8c6-676527a106a7.png)
-
-Reqeust / Response : Pay쪽 서버가 올라오지 않을경우 에러발생.
-
-
-![image](https://user-images.githubusercontent.com/53729857/205791167-d9b4359b-e816-482a-90bc-3ba348ab5a67.png)
-
-Reqeust / Response : Pay쪽 서버가 정상일 경우만 정상 작동
-
-Pub / Sub : Store쪽 서버가 올라오지 않을 경우에도 올라온 서버안에서 정상작동
-
+![image](https://user-images.githubusercontent.com/119825867/206370368-291075ce-44c8-4582-b8b1-fb86b91a312f.png)
+![image](https://user-images.githubusercontent.com/119825867/206370406-cbdab36d-34bf-4baf-946b-60334c0cdc1d.png)
 
 ## 5. Circuit Breaker
-- pay -> Payment.java에 추가
-```
-    @PrePersist
-    public void onPrePersist(){
-        if(action.equals("canceled")){
-            PaymentCanceled paymentCanceled = new PaymentCanceled();
-            BeanUtils.copyProperties(this, paymentCanceled);
-            paymentCanceled.publish();
-        }else if(action.equals("progress")){
-            PaymentApproved paymentApproved = new PaymentApproved();
-            BeanUtils.copyProperties(this, paymentApproved);
-
-            // 주문 정보가 커밋된 후에 이벤트 발생시켜야 한다.
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void beforeCommit(boolean readOnly) {
-                    paymentApproved.publish();
-                }
-            });
-            
-            // 강제 지연
-            try {
-                Thread.currentThread().sleep((long) (1000 + Math.random() * 220));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-        }else{
-            System.out.println("알 수 없는 action");
-        }
-
-    }
-```
-- app -> pom.xml에 추가
-```
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
-		</dependency>
-```
-- app -> application.yml에 추가
-```
-feign:
-  hystrix:
-    enabled: true
-
-hystrix:
-  command:
-    # 전역설정
-    default:
-      execution.isolation.thread.timeoutInMilliseconds: 10
-```
-- app -> PaymentServiceFallBack.java 
-```
-package mall.external;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
-
-
-@Service
-public class PaymentServiceFallBack implements PaymentService {
-    private static Logger logger = LoggerFactory.getLogger(PaymentServiceFallBack.class);
-
-    @Override
-    public void pay(Payment payment) {
-        logger.error("Circuit breaker has been opened. Fallback returned instead.");
-    }
-}
-```
-- 실행 시 아래의 에러 로그를 app쪽 로그에서 확인가능
-![image](https://user-images.githubusercontent.com/53729857/205817063-abf4008f-a96b-4f6f-8c28-b493878baf36.png)
-
-- 과부하 테스트 명령어
-![image](https://user-images.githubusercontent.com/53729857/205828449-8838f7cb-3342-48d6-b1e2-de4d36ccc191.png)
-
-- 초기상태
-![image](https://user-images.githubusercontent.com/53729857/205828846-d13262ad-8136-46d6-be86-53db3531fde9.png)
-
-- 요청이 점점 밀리는 것을 확인 가능
-![image](https://user-images.githubusercontent.com/53729857/205829022-646faa3b-1707-4a8e-9987-85f6d08a9cd3.png)
-
-- 종료
-![image](https://user-images.githubusercontent.com/53729857/205829348-11600e6b-6307-4586-9939-695e9e5f56d3.png)
-
-- WAS 로그 - 중간중간 FallBack 로그가 있음
-![image](https://user-images.githubusercontent.com/53729857/205829830-ea1edeac-a025-41fe-9d50-92d15ed502d7.png)
+ 
 
 ## 6. Gateway / Ingress
-gateway의 라우터 설정으로 :8081/orders 요청과 :8088/orders 요청이 같은 서비스를 제공한다.
-```
+Application.yml 파일
+server:
+  port: 8088
+
+---
+
 spring:
   profiles: default
   cloud:
     gateway:
       routes:
-        - id: app
+        - id: App
           uri: http://localhost:8081
           predicates:
-            - Path=/orders/**, /menus/**, /orderStates/**
-```
-![image](https://user-images.githubusercontent.com/53729857/205836882-b940a8ac-e567-43c0-b569-4b6adc0aa981.png)
-![image](https://user-images.githubusercontent.com/53729857/205836894-5858d3c0-08d5-4bd7-b8b0-7dba84c23b8a.png)
+            - Path=/orders/**, /menuSearches/**
+        - id: Adress Check
+          uri: http://localhost:8082
+          predicates:
+            - Path=/checkOederAdresses/**, 
+        - id: Pay
+          uri: http://localhost:8083
+          predicates:
+            - Path=/payments/**, 
+        - id: store
+          uri: http://localhost:8084
+          predicates:
+            - Path=/foodCookings/**, 
+        - id: Delivery
+          uri: http://localhost:8085
+          predicates:
+            - Path=/deliveryOrderProcessings/**, 
+        - id: Customer
+          uri: http://localhost:8086
+          predicates:
+            - Path=, /orderstatuses/**
+        - id: frontend
+          uri: http://localhost:8080
+          predicates:
+            - Path=/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
 
+---
+
+spring:
+  profiles: docker
+  cloud:
+    gateway:
+      routes:
+        - id: App
+          uri: http://app:8080
+          predicates:
+            - Path=/orders/**, /menuSearches/**
+        - id: Adress Check
+          uri: http://adressCheck:8080
+          predicates:
+            - Path=/checkOederAdresses/**, 
+        - id: Pay
+          uri: http://pay:8080
+          predicates:
+            - Path=/payments/**, 
+        - id: store
+          uri: http://store:8080
+          predicates:
+            - Path=/foodCookings/**, 
+        - id: Delivery
+          uri: http://delivery:8080
+          predicates:
+            - Path=/deliveryOrderProcessings/**, 
+        - id: Customer
+          uri: http://customer:8080
+          predicates:
+            - Path=, /orderstatuses/**
+        - id: frontend
+          uri: http://frontend:8080
+          predicates:
+            - Path=/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+server:
+  port: 8080
+
+Gateway 서비스 실행 
+![image](https://user-images.githubusercontent.com/119825867/206370695-d7ea73d9-741d-4fcb-8711-ba3dd3ee3709.png)
+
+![image](https://user-images.githubusercontent.com/119825867/206370727-d01fa3ef-c9bc-4196-b5e4-18e744dd1f39.png)
 
 
 # 기타
@@ -302,82 +293,6 @@ docker-compose up
 cd kafka
 docker-compose exec -it kafka /bin/bash
 cd /bin
-./kafka-console-consumer --bootstrap-server localhost:9092 --topic
+./kafka-console-consumer --bootstrap-server localhost:9092 --topic mallwon
 ```
 
-## Run the backend micro-services
-See the README.md files inside the each microservices directory:
-
-- app
-- store
-- customer
-- pay
-- rider
-
-
-## Run API Gateway (Spring Gateway)
-```
-cd gateway
-mvn spring-boot:run
-```
-
-## Test by API
-- app
-```
- http :8088/orders id="id" item="item" qty="qty" price="price" state="state" 
-```
-- store
-```
- http :8088/orderManagements id="id" orderId="orderId" address="address" foodType="foodType" state="state" 
-```
-- customer
-```
-```
-- pay
-```
- http :8088/payments id="id" orderId="orderId" amount="amount" action="action" 
-```
-- rider
-```
- http :8088/deliveries id="id" orderId="orderId" state="state" address="address" 
-```
-
-
-## Run the frontend
-```
-cd frontend
-npm i
-npm run serve
-```
-
-## Test by UI
-Open a browser to localhost:8088
-
-## Required Utilities
-
-- httpie (alternative for curl / POSTMAN) and network utils
-```
-sudo apt-get update
-sudo apt-get install net-tools
-sudo apt install iputils-ping
-pip install httpie
-```
-
-- kubernetes utilities (kubectl)
-```
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-```
-
-- aws cli (aws)
-```
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-```
-
-- eksctl 
-```
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-sudo mv /tmp/eksctl /usr/local/bin
-```
