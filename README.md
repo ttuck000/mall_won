@@ -177,6 +177,7 @@ public class OrderstatusViewHandler {
 
 ## 6. Gateway / Ingress
 Application.yml 파일
+
 server:
   port: 8088
 
@@ -274,6 +275,9 @@ spring:
 
 server:
   port: 8080
+
+
+------------------------------------------------------------------------------------------------------------
 
 Gateway 서비스 실행 
 ![image](https://user-images.githubusercontent.com/119825867/206370695-d7ea73d9-741d-4fcb-8711-ba3dd3ee3709.png)
